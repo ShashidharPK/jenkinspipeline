@@ -22,7 +22,7 @@ def call(String repoUrl, string severity, string org, string proj, string enviro
                     organisation: "${org}",
                     projectName: "${proj}",
                     snykInstallation: 'snyk', 
-                    snykTokenId: 'snyk-api-token'"
+                    snykTokenId: 'snyk-api-token'
                     )                    
 				}
 			}
