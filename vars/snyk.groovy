@@ -32,7 +32,7 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
                     sh '''
                         set +e
                         snyk auth ${TOKEN}
-                        snyk iac test --report
+                        find . -type file -name '*.tf' | xargs snyk iac test --report
                         '''
                     }
                 }            
