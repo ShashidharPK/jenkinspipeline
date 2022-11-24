@@ -1,4 +1,4 @@
-def call(String repoUrl, String severity, String org, String proj, String environment, String lifecycle, String criticality) {
+def call(String repoUrl, String severity, String org, String proj, String environment, String lifecycle, String criticality, Boolean failonissue) {
 	pipeline {
     agent any
 
@@ -15,9 +15,10 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
         }
         stage('Run Snyk') {
             steps {
-				snykSecurity  (
+		    snykSecurity  (
                     additionalArguments: "--remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}",
-                    severity: "${severity}", 
+                    severity: "${severity}",
+		    failOnIssues: "${failonissue}",
                     organisation: "${org}",
                     projectName: "${proj}",
                     snykInstallation: 'snyk', 
