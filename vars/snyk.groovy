@@ -1,4 +1,4 @@
-def call(String repoUrl, String severity, String org, String proj, String environment, String lifecycle, String criticality, String failonissue) {
+def call(String repoUrl, String severity, String org, String proj, String environment, String lifecycle, String criticality) {
 	pipeline {
     agent any
 
@@ -15,10 +15,9 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
         }
         stage('Run Snyk') {
             steps {
-		    snykSecurity  (
+				snykSecurity  (
                     additionalArguments: "--remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}",
-                    severity: "${severity}",
-		    failOnIssues: "${failonissue}",
+                    severity: "${severity}", 
                     organisation: "${org}",
                     projectName: "${proj}",
                     snykInstallation: 'snyk', 
@@ -28,15 +27,28 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
         }
         stage('IAC Scan') {
             steps {
-		    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    	sh '''
-                        	set +e
-                        	snyk auth ${TOKEN}
-                        	find . -type f -name '*.tf' | xargs snyk iac test
-                        	'''
-                    		}
-		    }
+                catchError(buildResult: 'SUCCESS')  {
+                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                    sh '''
+                        set +e
+                        snyk auth ${TOKEN}
+                        find . -type f -name '*.tf' | xargs snyk iac test
+                        '''
+                        }
+                    }
+                }            
+			}
+        stage('SAST Scan') {
+            steps {
+                catchError(buildResult: 'SUCCESS')  {
+                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                    sh '''
+                        set +e
+                        snyk auth ${TOKEN}
+                        snyk code test
+                        '''
+                        }
+                    }
                 }            
 			}
         }
