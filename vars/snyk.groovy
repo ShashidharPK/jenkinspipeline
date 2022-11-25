@@ -28,13 +28,15 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
         }
         stage('IAC Scan') {
             steps {
-                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    sh '''
-                        set +e
-                        snyk auth ${TOKEN}
-                        find . -type f -name '*.tf' | xargs snyk iac test
-                        '''
-                    }
+		    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                    	sh '''
+                        	set +e
+                        	snyk auth ${TOKEN}
+                        	find . -type f -name '*.tf' | xargs snyk iac test
+                        	'''
+                    		}
+		    }
                 }            
 			}
         }
