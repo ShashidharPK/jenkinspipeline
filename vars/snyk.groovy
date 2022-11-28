@@ -56,23 +56,17 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
             steps {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                        script {
-                            if ( ${dockerfile} == 'default' ) {
-                                sh """
-                                    set +e
-				    snyk config set disableSuggestions=true
-                                    snyk auth ${TOKEN}
+                            sh """
+                                set +e
+                                snyk auth ${TOKEN}
+                                if [ ${dockerfile} == default ]
+                                then
+                                    snyk config set disableSuggestions=true
                                     snyk container test ${repository}:${tag}
-                                    """
-                                }
-                            if ( ${dockerfile} != 'default' ) {
-                                sh """
-                                    set +e
-                                    snyk auth ${TOKEN}
+                                else
                                     snyk container test ${repository}:${tag} --dockerfile=${dockerfile}
-                                    """
-                                }
-                            }                    
+                                fi
+                            	"""
                         }
                     }
                 }
