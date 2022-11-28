@@ -1,4 +1,4 @@
-def call(String repoUrl, String severity, String org, String proj, String environment, String lifecycle, String criticality, String failonissue, String repository, String tag) {
+def call(String repoUrl, String severity, String org, String proj, String environment, String lifecycle, String criticality, String failonissue, String repository, String tag, String dockerfile) {
 	pipeline {
     agent any
 
@@ -51,18 +51,31 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
                         }
                     }
                 }            
-			}
-	    stage('Container Scan'){
+	    }
+        stage('Container Scan'){
             steps {
-                withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    sh """
-                        set +e
-                        snyk auth ${TOKEN}
-                        snyk container test ${repository}:${tag}
-			"""
+                catchError(buildResult: 'SUCCESS')  {
+                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                        script {
+                            if ( ${dockerfile} == default ) {
+                                sh """
+                                    set +e
+                                    snyk auth ${TOKEN}
+                                    snyk container test ${repository}:${tag}
+                                    """
+                                }
+                            if ( ${dockerfile} != default ) {
+                                sh """
+                                    set +e
+                                    snyk auth ${TOKEN}
+                                    snyk container test ${repository}:${tag} --dockerfile=${dockerfile}
+                                    """
+                                }
+                            }                    
                         }
+                    }
+                }
             }
         }
-        }
-	}
+    }
 }
