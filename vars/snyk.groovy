@@ -58,8 +58,7 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
                     sh '''
                         set +e
                         snyk auth ${TOKEN}
-                        snyk container test ${repository}:${tag}
-                        '''
+                        snyk container test '''${repository}''':'''${tag}                        
                         }
             }
         }
