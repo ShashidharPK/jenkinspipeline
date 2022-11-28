@@ -60,6 +60,7 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
                             if ( ${dockerfile} == default ) {
                                 sh """
                                     set +e
+				    snyk config set disableSuggestions=true
                                     snyk auth ${TOKEN}
                                     snyk container test ${repository}:${tag}
                                     """
