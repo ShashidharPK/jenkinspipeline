@@ -52,6 +52,17 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
                     }
                 }            
 			}
+	    stage('Container Scan'){
+            steps {
+                withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                    sh '''
+                        set +e
+                        snyk auth ${TOKEN}
+                        snyk container test ${repository}:${tag}
+                        '''
+                        }
+            }
+        }
         }
 	}
 }
