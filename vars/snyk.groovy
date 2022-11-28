@@ -64,7 +64,7 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
                                     snyk config set disableSuggestions=true
                                     snyk container test ${repository}:${tag}
                                 else
-                                    snyk container test ${repository}:${tag} --dockerfile=${dockerfile}
+                                    snyk container test ${repository}:${tag} --file=${dockerfile}
                                 fi
                             	"""
                         }
