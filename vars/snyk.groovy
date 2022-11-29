@@ -32,8 +32,14 @@ def call(String repoUrl, String severity, String org, String proj, String enviro
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh '''
                         set +e
-                        snyk auth ${TOKEN}
-                        find . -type f -name '*.tf' | xargs snyk iac test
+			file=`find . -type f -name '*.tf'`
+			if [ -z "$file" ]
+			then
+				echo "No Terraform files for scanning"
+			else
+                        	snyk auth ${TOKEN}
+                        	echo $file | xargs snyk iac test
+			fi
                         '''
                         }
                     }
