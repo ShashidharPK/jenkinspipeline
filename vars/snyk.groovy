@@ -1,4 +1,7 @@
-def call(String repoUrl, String severity, String org, String proj, String environment, String lifecycle, String criticality, String failonissue, String repository, String tag, String dockerfile, String iac) {
+def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String dockerfile, String iac, Map optional) {
+	String environment = optional.environment ? "environment=${optional.environment}" : ""
+	String lifecycle = optional.lifecycle ? "lifecycle=${optional.lifecycle}" : ""
+	String criticality = optional. criticality ? "criticality=${optional.criticality}" : ""
 	pipeline {
     agent any
 
