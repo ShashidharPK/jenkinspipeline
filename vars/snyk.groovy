@@ -1,7 +1,7 @@
 def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String dockerfile, String iac, Map optional) {
-	String environment = optional.environment ? "environment=${optional.environment}" : ""
-	String lifecycle = optional.lifecycle ? "lifecycle=${optional.lifecycle}" : ""
-	String criticality = optional. criticality ? "criticality=${optional.criticality}" : ""
+	String environment = optional.environment ? "${optional.environment}" : ""
+	String lifecycle = optional.lifecycle ? "${optional.lifecycle}" : ""
+	String criticality = optional. criticality ? "${optional.criticality}" : ""
 	pipeline {
     agent any
 
@@ -41,6 +41,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                             snyk iac test --report
                         else
                             echo "No terraform files for scanning"
+			fi
                         """
                         }
                     }
