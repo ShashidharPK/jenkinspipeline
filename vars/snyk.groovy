@@ -1,4 +1,4 @@
-def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String dockerfile, String iac, Map optional) {
+def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String dockerfile, Map optional) {
 	String environment = optional.environment ? "${optional.environment}" : ""
 	String lifecycle = optional.lifecycle ? "${optional.lifecycle}" : ""
 	String criticality = optional. criticality ? "${optional.criticality}" : ""
@@ -34,14 +34,9 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """
-                        set +e
-                        if [[ ${iac} == true ]]
-                        then
-                            snyk auth ${TOKEN}
-                            snyk iac test --report
-                        else
-                            echo "No terraform files for scanning"
-			fi
+                        set +e                        
+                        snyk auth ${TOKEN}
+                        snyk iac test --report                        
                         """
                         }
                     }
@@ -67,13 +62,8 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                             sh """
                                 set +e
                                 snyk auth ${TOKEN}
-                                if [[ ${dockerfile} == default ]]
-                                then
-                                    snyk config set disableSuggestions=true
-                                    snyk container test ${repository}:${tag}
-                                else
-                                    snyk container test ${repository}:${tag} --file=${dockerfile}
-                                fi
+                                snyk config set disableSuggestions=true
+                                snyk container test ${repository}:${tag} --file=${dockerfile}                                
                             	"""
                         }
                     }
