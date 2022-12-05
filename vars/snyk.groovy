@@ -35,7 +35,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """
                         set +e
-                        if [ ${iac} == true ]
+                        if [[ ${iac} == true ]]
                         then
                             snyk auth ${TOKEN}
                             snyk iac test --report
@@ -67,7 +67,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                             sh """
                                 set +e
                                 snyk auth ${TOKEN}
-                                if [ ${dockerfile} == default ]
+                                if [[ ${dockerfile} == default ]]
                                 then
                                     snyk config set disableSuggestions=true
                                     snyk container test ${repository}:${tag}
