@@ -1,7 +1,11 @@
-def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String dockerfile, String scaAnalysis, Map optional) {
+def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, Map optional, Map analysis) {
 	String environment = optional.environment ? "${optional.environment}" : ""
 	String lifecycle = optional.lifecycle ? "${optional.lifecycle}" : ""
-	String criticality = optional. criticality ? "${optional.criticality}" : ""
+	String criticality = optional.criticality ? "${optional.criticality}" : ""
+	String scaAnalysis = analysis.scaAnalysis ? "{analysis.scaAnalysis}" : "true"
+	String sastAnalysis = analysis.sastAnalysis ? "{analysis.sastAnalysis}" : "true"
+	String iacAnalysis = analysis.iacAnalysis ? "{analysis.iacAnalysis}" : "true"
+	String containerAnalysis = analysis.containerAnalysis ? "{analysis.containerAnalysis}" : "true"
 	pipeline {
     agent any
 
@@ -33,6 +37,9 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                 }
 	}
        stage('executeIacAnalysis') {
+	       when {
+			expression { params.iacAnalysis == 'true' }
+		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
@@ -46,6 +53,9 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                 }            
 			}
         stage('executeSastAnalysis') {
+		when {
+			expression { params.sastAnalysis == 'true' }
+		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
@@ -59,6 +69,9 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                 }            
 	    }
         stage('executeContainerAnalysis'){
+		when {
+			expression { params.containerAnalysis == 'true' }
+		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
@@ -66,7 +79,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                                 set +e
                                 snyk auth ${TOKEN}
                                 snyk config set disableSuggestions=true
-                                snyk container test ${repository}:${tag} --file=${dockerfile}                                
+                                snyk container test ${repository}:${tag}                               
                             	"""
                         }
                     }
