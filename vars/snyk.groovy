@@ -29,8 +29,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                         """
                         }
                     }
-                }
-        }
+                }        
        stage('executeIacAnalysis') {
             steps {
                 catchError(buildResult: 'SUCCESS')  {
