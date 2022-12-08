@@ -35,7 +35,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
 	}
        stage('executeIacAnalysis') {
 	       when {
-			expression { params.iacAnalysis == 'true' }
+			expression { iacAnalysis == 'true' }
 		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
@@ -51,7 +51,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
 			}
         stage('executeSastAnalysis') {
 		when {
-			expression { params.sastAnalysis == 'true' }
+			expression { sastAnalysis == 'true' }
 		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
@@ -67,7 +67,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
 	    }
         stage('executeContainerAnalysis'){
 		when {
-			expression { params.containerAnalysis == 'true' }
+			expression { containerAnalysis == 'true' }
 		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
