@@ -1,4 +1,4 @@
-def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String scaAnalysis, String iacAnalysis, String sastAnalysis, string containerAnalysis, Map optional) {
+def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String scaAnalysis, String iacAnalysis, String sastAnalysis, String containerAnalysis, Map optional) {
 	String environment = optional.environment ? "${optional.environment}" : ""
 	String lifecycle = optional.lifecycle ? "${optional.lifecycle}" : ""
 	String criticality = optional.criticality ? "${optional.criticality}" : ""
