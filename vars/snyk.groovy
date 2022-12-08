@@ -2,9 +2,9 @@ def call(String repoUrl, String severity, String org, String proj, String failon
 	String environment = optional.environment ? "${optional.environment}" : ""
 	String lifecycle = optional.lifecycle ? "${optional.lifecycle}" : ""
 	String criticality = optional.criticality ? "${optional.criticality}" : ""
-	String scaAnalysis = analysis.scaAnalysis ? "{analysis.scaAnalysis}" : "true"
-	String sastAnalysis = analysis.sastAnalysis ? "{analysis.sastAnalysis}" : "true"
+	String scaAnalysis = analysis.scaAnalysis ? "{analysis.scaAnalysis}" : "false"	
 	String iacAnalysis = analysis.iacAnalysis ? "{analysis.iacAnalysis}" : "true"
+	String sastAnalysis = analysis.sastAnalysis ? "{analysis.sastAnalysis}" : "true"
 	String containerAnalysis = analysis.containerAnalysis ? "{analysis.containerAnalysis}" : "true"
 	pipeline {
     agent any
