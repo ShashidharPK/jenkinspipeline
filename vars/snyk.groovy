@@ -18,7 +18,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
         }
         stage('executeScaAnalysis') {
 		when {
-			expression { return !scaAnalysis }
+			expression { ${scaAnalysis} == 'true' }
 		}
             catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
