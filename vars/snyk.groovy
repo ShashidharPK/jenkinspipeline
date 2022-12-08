@@ -1,4 +1,4 @@
-def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String dockerfile, Map optional) {
+def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String dockerfile, String scaAnalysis, Map optional) {
 	String environment = optional.environment ? "${optional.environment}" : ""
 	String lifecycle = optional.lifecycle ? "${optional.lifecycle}" : ""
 	String criticality = optional. criticality ? "${optional.criticality}" : ""
@@ -16,20 +16,22 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                 sh 'npm install'
             }
         }
-        stage('Run Snyk') {
-            steps {
-				snykSecurity  (
-                    additionalArguments: "--remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}",
-                    severity: "${severity}",
-                    failOnIssues: "${failonissue}",
-                    organisation: "${org}",
-                    projectName: "${proj}",
-                    snykInstallation: 'snyk', 
-                    snykTokenId: 'snyk-api-token'
-                )                    
-			}
+        stage('executeScaAnalysis') {
+		when {
+			expression { return !scaAnalysis }
+		}
+            catchError(buildResult: 'SUCCESS')  {
+                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                    sh """
+                        set +e                        
+                        snyk auth ${TOKEN}
+                        snyk test --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}                    
+                        """
+                        }
+                    }
+                }
         }
-       stage('IAC Scan') {
+       stage('executeIacAnalysis') {
             steps {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
@@ -42,7 +44,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                     }
                 }            
 			}
-        stage('SAST Scan') {
+        stage('executeSastAnalysis') {
             steps {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
@@ -55,7 +57,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
                     }
                 }            
 	    }
-        stage('Container Scan'){
+        stage('executeContainerAnalysis'){
             steps {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
