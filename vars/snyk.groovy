@@ -19,7 +19,7 @@ def call(String repoUrl, String severity, String org, String proj, String failon
         }
         stage('executeScaAnalysis') {
 		when {
-			expression { ${scaAnalysis} == 'true' }
+			expression { return !scaAnalysis }
 		}
 		steps {
             		catchError(buildResult: 'SUCCESS')  {
