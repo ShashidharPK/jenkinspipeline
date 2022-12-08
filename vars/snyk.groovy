@@ -20,16 +20,18 @@ def call(String repoUrl, String severity, String org, String proj, String failon
 		when {
 			expression { ${scaAnalysis} == 'true' }
 		}
-            catchError(buildResult: 'SUCCESS')  {
-                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    sh """
-                        set +e                        
-                        snyk auth ${TOKEN}
-                        snyk test --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}                    
-                        """
-                        }
-                    }
-                }        
+		steps {
+            		catchError(buildResult: 'SUCCESS')  {
+                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                    	sh """
+                        	set +e                        
+                        	snyk auth ${TOKEN}
+                        	snyk test --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}                    
+                        	"""
+                        	}
+                    	}
+                }
+	}
        stage('executeIacAnalysis') {
             steps {
                 catchError(buildResult: 'SUCCESS')  {
