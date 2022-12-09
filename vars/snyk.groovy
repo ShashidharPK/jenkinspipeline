@@ -1,11 +1,7 @@
-def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, Map optional, Map analysis) {
+def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String scaAnalysis, String iacAnalysis, String sastAnalysis, String containerAnalysis, Map optional) {
 	String environment = optional.environment ? "${optional.environment}" : ""
 	String lifecycle = optional.lifecycle ? "${optional.lifecycle}" : ""
-	String criticality = optional.criticality ? "${optional.criticality}" : ""
-	String scaAnalysis = analysis.scaAnalysis ? "{analysis.scaAnalysis}" : "true"	
-	String iacAnalysis = analysis.iacAnalysis ? "{analysis.iacAnalysis}" : "true"
-	String sastAnalysis = analysis.sastAnalysis ? "{analysis.sastAnalysis}" : "true"
-	String containerAnalysis = analysis.containerAnalysis ? "{analysis.containerAnalysis}" : "true"
+	String criticality = optional.criticality ? "${optional.criticality}" : ""	
 	
 	pipeline {
     agent any
