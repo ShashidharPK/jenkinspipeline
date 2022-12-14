@@ -1,5 +1,20 @@
 
 def snykSecurityScan (parameters) {
+
+    def repoUrl = parameters["repoUrl"]
+    def severity = parameters["severity"]
+    def org = parameters["org"]
+    def proj = parameters["proj"]
+    def failonissue = parameters["failonissue"]
+    def repository = parameters["repository"]
+    def tag = parameters["tag"]
+    def scaAnalysis = parameters["scaAnalysis"]
+    def iacAnalysis = parameters["iacAnalysis"]
+    def sastAnalysis = parameters["sastAnalysis"]
+    def containerAnalysis = parameters["containerAnalysis"]
+    def environment = parameters["environment"]
+    def lifecycle = parameters["lifecycle"]
+    def criticality = parameters["criticality"]
 	
 	pipeline {
     agent any
@@ -7,7 +22,7 @@ def snykSecurityScan (parameters) {
     stages {
         stage('Checkout Repo') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: '49174964-c138-49e8-bb2d-5daaab4ba293', url: "${parameters.repoUrl}"]]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: '49174964-c138-49e8-bb2d-5daaab4ba293', url: "${repoUrl}"]]])
             }
         }
         stage('Install Dependencies') {
@@ -17,7 +32,7 @@ def snykSecurityScan (parameters) {
         }
         stage('executeScaAnalysis') {
 		when {
-			expression { parameters.scaAnalysis == 'true'}
+			expression { scaAnalysis == 'true'}
 		}
 		steps {
             		catchError(buildResult: 'SUCCESS')  {
@@ -25,7 +40,7 @@ def snykSecurityScan (parameters) {
                     	sh """
                         	set +e                        
                         	snyk auth ${TOKEN}
-                        	snyk test --org=${parameters.org} --project-name=${parameters.proj} --remote-repo-url=${parameters.repoUrl} --project-environment=${parameters.environment} --project-lifecycle=${parameters.lifecycle} --project-business-criticality=${parameters.criticality}                    
+                        	snyk test --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}                    
                         	"""
                         	}
                     	}
@@ -33,7 +48,7 @@ def snykSecurityScan (parameters) {
 	}
        stage('executeIacAnalysis') {
 	       when {
-			expression { parameters.iacAnalysis == 'true' }
+			expression { iacAnalysis == 'true' }
 		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
@@ -49,7 +64,7 @@ def snykSecurityScan (parameters) {
 			}
         stage('executeSastAnalysis') {
 		when {
-			expression { parameters.sastAnalysis == 'true' }
+			expression { sastAnalysis == 'true' }
 		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
@@ -65,7 +80,7 @@ def snykSecurityScan (parameters) {
 	    }
         stage('executeContainerAnalysis'){
 		when {
-			expression { parameters.containerAnalysis == 'true' }
+			expression { containerAnalysis == 'true' }
 		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
@@ -74,7 +89,7 @@ def snykSecurityScan (parameters) {
                                 set +e
                                 snyk auth ${TOKEN}
                                 snyk config set disableSuggestions=true
-                                snyk container test ${parameters.repository}:${parameters.tag}                               
+                                snyk container test ${repository}:${tag}                               
                             	"""
                         }
                     }
