@@ -31,8 +31,7 @@ def call(Map snykConfig) {
             }
         }
         stage('executeScaAnalysis') {
-		when {
-			expression { scaAnalysis == 'true'}
+		if (scaAnalysis)
 		}
 		steps {
             		catchError(buildResult: 'SUCCESS')  {
