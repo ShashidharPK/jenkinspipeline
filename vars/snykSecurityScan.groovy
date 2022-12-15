@@ -1,4 +1,4 @@
-def snykSecurityScan (Map snykConfig) {
+def call(Map snykConfig) {
 
     String repoUrl = snykConfig.repoUrl
     String severity = snykConfig.severity
