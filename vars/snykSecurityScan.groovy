@@ -1,20 +1,21 @@
+def snykSecurityScan (snykConfig) {
 
-def snykSecurityScan (parameters) {
+    String repoUrl = snykConfig.repoUrl
+    String severity = snykConfig.severity
+    String org = snykConfig.org
+    String proj = snykConfig.proj
+    String failonissue = snykConfig.failonissue
+    String repository = snykConfig.repository
+    String tag = snykConfig.tag
+    String scaAnalysis = snykConfig.scaAnalysis
+    String iacAnalysis = snykConfig.iacAnalysis
+    String sastAnalysis = snykConfig.sastAnalysis
+    String containerAnalysis = snykConfig.containerAnalysis
+    String environment = snykConfig.environment ? "${snykConfig.environment}" : ""
+    String lifecycle = snykConfig.lifecycle ? "${snykConfig.lifecycle}" : ""
+    String criticality = snykConfig.criticality ? "${snykConfig.criticality}" : ""
 
-    def repoUrl = parameters["repoUrl"]
-    def severity = parameters["severity"]
-    def org = parameters["org"]
-    def proj = parameters["proj"]
-    def failonissue = parameters["failonissue"]
-    def repository = parameters["repository"]
-    def tag = parameters["tag"]
-    def scaAnalysis = parameters["scaAnalysis"]
-    def iacAnalysis = parameters["iacAnalysis"]
-    def sastAnalysis = parameters["sastAnalysis"]
-    def containerAnalysis = parameters["containerAnalysis"]
-    def environment = parameters["environment"]
-    def lifecycle = parameters["lifecycle"]
-    def criticality = parameters["criticality"]
+
 	
 	pipeline {
     agent any
