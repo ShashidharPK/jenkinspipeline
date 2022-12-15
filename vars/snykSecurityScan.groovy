@@ -57,7 +57,7 @@ def call(Map snykConfig) {
                     sh """
                         set +e                        
                         snyk auth ${TOKEN}
-                        snyk iac test --report --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}
+                        snyk iac test --report --org=${org} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}
                         """
                         }
                     }
@@ -89,7 +89,7 @@ def call(Map snykConfig) {
                             sh """
                                 set +e
                                 snyk auth ${TOKEN}
-                                snyk container monitor ${repository}:${tag} --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}
+                                snyk container monitor ${repository}:${tag} --org=${org} --project-name=${proj} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}
                             	"""
                         }
                     }
