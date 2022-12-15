@@ -32,7 +32,7 @@ def call(Map snykConfig) {
         }
         stage('executeScaAnalysis') {
 		if (scaAnalysis)
-		
+		{
 		steps {
             		catchError(buildResult: 'SUCCESS')  {
                     	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
@@ -45,6 +45,7 @@ def call(Map snykConfig) {
                     	}
                 }
 	}
+}
        stage('executeIacAnalysis') {
 	       when {
 			expression { iacAnalysis == 'true' }
