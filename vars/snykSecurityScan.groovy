@@ -41,7 +41,7 @@ def call(Map snykConfig) {
                     	sh """
                         	set +e                        
                         	snyk auth ${TOKEN}
-                        	snyk test --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}                    
+                        	snyk monitor --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}                    
                         	"""
                         	}
                     	}
@@ -57,7 +57,7 @@ def call(Map snykConfig) {
                     sh """
                         set +e                        
                         snyk auth ${TOKEN}
-                        snyk iac test --report                        
+                        snyk iac test --report --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}
                         """
                         }
                     }
@@ -70,11 +70,11 @@ def call(Map snykConfig) {
             steps {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    sh '''
+                    sh """
                         set +e
                         snyk auth ${TOKEN}
-                        snyk code test
-                        '''
+                        snyk code test --severity-threshold=${severity}
+                        """
                         }
                     }
                 }            
@@ -89,8 +89,7 @@ def call(Map snykConfig) {
                             sh """
                                 set +e
                                 snyk auth ${TOKEN}
-                                snyk config set disableSuggestions=true
-                                snyk container test ${repository}:${tag}                               
+                                snyk container monitor ${repository}:${tag} --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}
                             	"""
                         }
                     }
