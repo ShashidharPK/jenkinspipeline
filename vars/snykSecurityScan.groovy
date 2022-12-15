@@ -6,7 +6,7 @@ def call(Map snykConfig) {
     String projectName = snykConfig.projectName    
     String dockerImage = snykConfig.dockerImage
     String imageTag = snykConfig.imageTag
-    String scaAnalysis = snykConfig.scaAnalysis
+    Boolean scaAnalysis = snykConfig.scaAnalysis
     String iacAnalysis = snykConfig.iacAnalysis
     String sastAnalysis = snykConfig.sastAnalysis
     String containerAnalysis = snykConfig.containerAnalysis
