@@ -7,9 +7,9 @@ def call(Map snykConfig) {
     String dockerImage = snykConfig.dockerImage
     String imageTag = snykConfig.imageTag
     Boolean scaAnalysis = snykConfig.scaAnalysis
-    String iacAnalysis = snykConfig.iacAnalysis
-    String sastAnalysis = snykConfig.sastAnalysis
-    String containerAnalysis = snykConfig.containerAnalysis
+    Boolean iacAnalysis = snykConfig.iacAnalysis
+    Boolean sastAnalysis = snykConfig.sastAnalysis
+    Boolean containerAnalysis = snykConfig.containerAnalysis
     String environment = snykConfig.environment ? "${snykConfig.environment}" : ""
     String lifecycle = snykConfig.lifecycle ? "${snykConfig.lifecycle}" : ""
     String businessCriticality = snykConfig.businessCriticality ? "${snykConfig.businessCriticality}" : ""
@@ -49,7 +49,7 @@ def call(Map snykConfig) {
 
        stage('executeIacAnalysis') {
 	       when {
-			expression { iacAnalysis == 'true' }
+			expression { iacAnalysis == true }
 		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
@@ -65,7 +65,7 @@ def call(Map snykConfig) {
 			}
         stage('executeSastAnalysis') {
 		when {
-			expression { sastAnalysis == 'true' }
+			expression { sastAnalysis == true }
 		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
@@ -81,7 +81,7 @@ def call(Map snykConfig) {
 	    }
         stage('executeContainerAnalysis'){
 		when {
-			expression { containerAnalysis == 'true' }
+			expression { containerAnalysis == true }
 		}
             steps {
                 catchError(buildResult: 'SUCCESS')  {
