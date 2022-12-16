@@ -58,18 +58,24 @@ def call(Map snykConfig) {
                 }
 			}
         stage('executeContainerAnalysis'){
-		    if ( containerAnalysis == true ) {
+		    if ( containerAnalysis == true && performAppAnalysis == true ) {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                             sh """
                                 set +e
-                                snyk auth ${TOKEN}
-                                if [[ ${performAppAnalysis} == true ]]
-                                then                                
-                                    snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality} --app-vulns
-                                else
-                                    snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
-                                fi
+                                snyk auth ${TOKEN}                               
+                                snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality} --app-vulns
+                            	"""
+                        }
+                    }
+                }
+            if ( containerAnalysis == true && performAppAnalysis == false ) {
+                catchError(buildResult: 'SUCCESS')  {
+                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                            sh """
+                                set +e
+                                snyk auth ${TOKEN}                               
+                                snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                             	"""
                         }
                     }
