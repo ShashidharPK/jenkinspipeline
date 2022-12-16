@@ -6,9 +6,8 @@ def call(Map snykConfig) {
     String projectName = snykConfig.projectName    
     String dockerImage = snykConfig.dockerImage
     String imageTag = snykConfig.imageTag
-    Boolean scaAnalysis = snykConfig.scaAnalysis
-    Boolean iacAnalysis = snykConfig.iacAnalysis
-    Boolean sastAnalysis = snykConfig.sastAnalysis
+    Boolean performAppAnalysis = snykConfig.performAppAnalysis
+    Boolean iacAnalysis = snykConfig.iacAnalysis    
     Boolean containerAnalysis = snykConfig.containerAnalysis
     String environment = snykConfig.environment ? "${snykConfig.environment}" : ""
     String lifecycle = snykConfig.lifecycle ? "${snykConfig.lifecycle}" : ""
@@ -17,7 +16,7 @@ def call(Map snykConfig) {
      
         stage('executeScaAnalysis') {
 		 
-		    if (scaAnalysis == true) {
+		    if (performAppAnalysis == true) {
                 catchError(buildResult: 'SUCCESS')  {
                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                    	sh """
@@ -29,8 +28,22 @@ def call(Map snykConfig) {
                    	}
                 }
 	        }
+        
+        stage('executeSastAnalysis') {
+		    if ( performAppAnalysis == true ) {
+                catchError(buildResult: 'SUCCESS')  {
+                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                    sh """
+                        set +e
+                        snyk auth ${TOKEN}
+                        snyk code test --severity-threshold=${severity}
+                        """
+                        }
+                    }
+                }
+	        }
 
-       stage('executeIacAnalysis') {
+        stage('executeIacAnalysis') {
 	      
 			if ( iacAnalysis == true ) {
                 catchError(buildResult: 'SUCCESS')  {
@@ -44,19 +57,6 @@ def call(Map snykConfig) {
                     }
                 }
 			}
-        stage('executeSastAnalysis') {
-		    if ( sastAnalysis == true ) {
-                catchError(buildResult: 'SUCCESS')  {
-                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    sh """
-                        set +e
-                        snyk auth ${TOKEN}
-                        snyk code test --severity-threshold=${severity}
-                        """
-                        }
-                    }
-                }
-	        }
         stage('executeContainerAnalysis'){
 		    if ( containerAnalysis == true ) {
                 catchError(buildResult: 'SUCCESS')  {
@@ -64,7 +64,12 @@ def call(Map snykConfig) {
                             sh """
                                 set +e
                                 snyk auth ${TOKEN}
-                                snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
+                                if [[ ${performAppAnalysis} == true ]]
+                                then                                
+                                    snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality} --app-vulns
+                                else
+                                    snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
+                                fi
                             	"""
                         }
                     }
