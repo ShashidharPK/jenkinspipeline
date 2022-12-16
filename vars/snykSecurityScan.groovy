@@ -14,38 +14,23 @@ def call(Map snykConfig) {
     String lifecycle = snykConfig.lifecycle ? "${snykConfig.lifecycle}" : ""
     String businessCriticality = snykConfig.businessCriticality ? "${snykConfig.businessCriticality}" : ""
 
-
-	
-	pipeline {
-    agent any
-
-    stages {
-        stage('Checkout Repo') {
-            steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: '49174964-c138-49e8-bb2d-5daaab4ba293', url: "${repoUrl}"]]])
-            }
-        }
-        stage('Install Dependencies') {
-            steps {                
-                sh 'npm install'
-            }
-        }
+     
         stage('executeScaAnalysis') {
 		 when {
 			expression { scaAnalysis == true }
 		}
 		steps {
-            		catchError(buildResult: 'SUCCESS')  {
-                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    	sh """
-                        	set +e                        
-                        	snyk auth ${TOKEN}
-                        	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}                    
-                        	"""
-                        	}
-                    	}
-                }
-	}
+            catchError(buildResult: 'SUCCESS')  {
+               	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+               	sh """
+                   	set +e                        
+                   	snyk auth ${TOKEN}
+                   	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}                    
+                   	"""
+                   	}
+               	}
+            }
+	    }
 
        stage('executeIacAnalysis') {
 	       when {
@@ -78,7 +63,7 @@ def call(Map snykConfig) {
                         }
                     }
                 }            
-	    }
+	        }
         stage('executeContainerAnalysis'){
 		when {
 			expression { containerAnalysis == true }
@@ -94,7 +79,5 @@ def call(Map snykConfig) {
                         }
                     }
                 }
-            }
+            }        
         }
-    }
-}
