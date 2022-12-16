@@ -16,27 +16,23 @@ def call(Map snykConfig) {
 
      
         stage('executeScaAnalysis') {
-		 when {
-			expression { scaAnalysis == true }
-		}
-		steps {
-            catchError(buildResult: 'SUCCESS')  {
-               	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-               	sh """
-                   	set +e                        
-                   	snyk auth ${TOKEN}
-                   	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}                    
-                   	"""
+		 
+		    if (scaAnalysis == true) {
+                catchError(buildResult: 'SUCCESS')  {
+                   	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                   	sh """
+                       	set +e                        
+                       	snyk auth ${TOKEN}
+                       	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}                    
+                       	"""
+                       	}
                    	}
-               	}
-            }
-	    }
+                }
+	        }
 
        stage('executeIacAnalysis') {
-	       when {
-			expression { iacAnalysis == true }
-		}
-            steps {
+	      
+			if ( iacAnalysis == true ) {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """
@@ -46,13 +42,10 @@ def call(Map snykConfig) {
                         """
                         }
                     }
-                }            
+                }
 			}
         stage('executeSastAnalysis') {
-		when {
-			expression { sastAnalysis == true }
-		}
-            steps {
+		    if ( sastAnalysis == true ) {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """
@@ -62,13 +55,10 @@ def call(Map snykConfig) {
                         """
                         }
                     }
-                }            
+                }
 	        }
         stage('executeContainerAnalysis'){
-		when {
-			expression { containerAnalysis == true }
-		}
-            steps {
+		    if ( containerAnalysis == true ) {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                             sh """
@@ -79,5 +69,5 @@ def call(Map snykConfig) {
                         }
                     }
                 }
-            }        
+            }
         }
