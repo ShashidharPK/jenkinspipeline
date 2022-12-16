@@ -6,10 +6,11 @@ def call(Map snykConfig) {
     String projectName = snykConfig.projectName    
     String dockerImage = snykConfig.dockerImage
     String imageTag = snykConfig.imageTag
-    Boolean performAppAnalysis = snykConfig.performAppAnalysis
+    Boolean performAppAnalysis = snykConfig.performAppAnalysis //Performs SCA and SAST analysis if performAppAnalysis is set to true
     Boolean iacAnalysis = snykConfig.iacAnalysis    
     Boolean containerAnalysis = snykConfig.containerAnalysis
-    String environment = snykConfig.environment ? "${snykConfig.environment}" : ""
+    //Environment, lifecycle and business criticality are tags provided for each project in Snyk. Null value will be taken by default if the value is not provided
+    String environment = snykConfig.environment ? "${snykConfig.environment}" : "" 
     String lifecycle = snykConfig.lifecycle ? "${snykConfig.lifecycle}" : ""
     String businessCriticality = snykConfig.businessCriticality ? "${snykConfig.businessCriticality}" : ""
 
@@ -58,6 +59,7 @@ def call(Map snykConfig) {
                 }
 			}
         stage('executeContainerAnalysis'){
+		    // Checks for application vulnerability from the container images
 		    if ( containerAnalysis == true && performAppAnalysis == true ) {
                 catchError(buildResult: 'SUCCESS')  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
