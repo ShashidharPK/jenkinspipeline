@@ -39,7 +39,7 @@ def call(Map snykConfig) {
                 catchError(buildResult: "${appFindings}")  {
                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                    	sh """
-			if [[ -z ${repoUrl} || -z ${orgId} || -z ${projectName} ]]
+			if test -z "$repoUrl" || test -z "$orgId" || test -z "$projectName"
 			then
 				echo "Variables repoUrl or orgId or projectName is not defined"
 				exit 1
