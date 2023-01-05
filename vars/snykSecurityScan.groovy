@@ -38,8 +38,7 @@ def call(Map snykConfig) {
 		    if (performAppAnalysis == true) {
                 catchError(buildResult: "${appFindings}")  {
                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                   	sh """
-                       	set +e                        
+                   	sh """                    
                        	snyk auth ${TOKEN}
                        	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}                    
                        	"""
@@ -53,7 +52,6 @@ def call(Map snykConfig) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """
-                        set +e
                         snyk auth ${TOKEN}
                         snyk code test --severity-threshold=${severity}
                         """
@@ -67,8 +65,7 @@ def call(Map snykConfig) {
 			if ( iacAnalysis == true ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    sh """
-                        set +e                        
+                    sh """        
                         snyk auth ${TOKEN}
                         snyk iac test --report --org=${orgId} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                         """
@@ -81,8 +78,7 @@ def call(Map snykConfig) {
 		    if ( containerAnalysis == true && performAppAnalysis == true ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                            sh """
-                                set +e
+                            sh """                                
                                 snyk auth ${TOKEN}                               
                                 snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality} --app-vulns
                             	"""
@@ -93,7 +89,6 @@ def call(Map snykConfig) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                             sh """
-                                set +e
                                 snyk auth ${TOKEN}                               
                                 snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                             	"""
