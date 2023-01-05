@@ -35,7 +35,7 @@ def call(Map snykConfig) {
      
         stage('executeScaAnalysis') {
 		 
-		    if (performAppAnalysis) {
+		    if (performAppAnalysis == true ) {
                 catchError(buildResult: "${appFindings}")  {
                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                    	sh """                    
@@ -48,7 +48,7 @@ def call(Map snykConfig) {
 	        }
         
         stage('executeSastAnalysis') {
-		    if ( performAppAnalysis ) {
+		    if ( performAppAnalysis == true ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """
@@ -62,7 +62,7 @@ def call(Map snykConfig) {
 
         stage('executeIacAnalysis') {
 	      
-			if ( iacAnalysis == "true" ) {
+			if ( iacAnalysis == true ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """        
