@@ -23,9 +23,9 @@ def call(Map snykConfig) {
     String projectName = snykConfig.projectName ? "${snykConfig.projectName}" : ""
     String dockerImage = snykConfig.dockerImage ? "${snykConfig.dockerImage}" : ""
     String imageTag = snykConfig.imageTag ? "${snykConfig.imageTag}" : "latest"
-    Boolean performAppAnalysis = snykConfig.performAppAnalysis ? "${snykConfig.performAppAnalysis}" : "false" //Performs SCA and SAST analysis if performAppAnalysis is set to true
-    Boolean iacAnalysis = snykConfig.iacAnalysis ? "${snykConfig.iacAnalysis}" : "false"
-    Boolean containerAnalysis = snykConfig.containerAnalysis ? "${snykConfig.containerAnalysis}" : "false"
+    String performAppAnalysis = snykConfig.performAppAnalysis ? "${snykConfig.performAppAnalysis}" : "false" //Performs SCA and SAST analysis if performAppAnalysis is set to true
+    String iacAnalysis = snykConfig.iacAnalysis ? "${snykConfig.iacAnalysis}" : "false"
+    String containerAnalysis = snykConfig.containerAnalysis ? "${snykConfig.containerAnalysis}" : "false"
     //Environment, lifecycle and business criticality are tags provided for each project in Snyk. Null value will be taken by default if the value is not provided
     String environment = snykConfig.environment ? "${snykConfig.environment}" : "" 
     String lifecycle = snykConfig.lifecycle ? "${snykConfig.lifecycle}" : ""
