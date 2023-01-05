@@ -62,7 +62,7 @@ def call(Map snykConfig) {
 
         stage('executeIacAnalysis') {
 	      
-			if ( iacAnalysis == true ) {
+			if ( iacAnalysis == "true" ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """        
