@@ -23,7 +23,7 @@ def call(Map snykConfig) {
     String projectName = snykConfig.projectName ? "${snykConfig.projectName}" : ""
     String dockerImage = snykConfig.dockerImage ? "${snykConfig.dockerImage}" : ""
     String imageTag = snykConfig.imageTag ? "${snykConfig.imageTag}" : "latest"
-    String performAppAnalysis = snykConfig.performAppAnalysis ? "${snykConfig.performAppAnalysis}" : "false" //Performs SCA and SAST analysis if performAppAnalysis is set to true
+    String performAppAnalysis = snykConfig.performAppAnalysis ? "${snykConfig.performAppAnalysis}" : "true" //Performs SCA and SAST analysis if performAppAnalysis is set to true
     String iacAnalysis = snykConfig.iacAnalysis ? "${snykConfig.iacAnalysis}" : "false"
     String containerAnalysis = snykConfig.containerAnalysis ? "${snykConfig.containerAnalysis}" : "false"
     //Environment, lifecycle and business criticality are tags provided for each project in Snyk. Null value will be taken by default if the value is not provided
@@ -31,7 +31,12 @@ def call(Map snykConfig) {
     String lifecycle = snykConfig.lifecycle ? "${snykConfig.lifecycle}" : ""
     String businessCriticality = snykConfig.businessCriticality ? "${snykConfig.businessCriticality}" : ""
     String appFindings = snykConfig.appFindings ? "${snykConfig.appFindings}" : "SUCCESS"
-
+    
+    if test -z "$repoUrl" || test -z "$orgId" || test -z "$projectName"
+	then
+		echo "Variables repoUrl or orgId or projectName is not defined"
+		exit 1
+	fi
      
         stage('executeScaAnalysis') {
 		 
