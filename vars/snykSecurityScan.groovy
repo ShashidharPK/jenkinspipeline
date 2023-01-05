@@ -30,7 +30,7 @@ def call(Map snykConfig) {
     String environment = snykConfig.environment ? "${snykConfig.environment}" : "" 
     String lifecycle = snykConfig.lifecycle ? "${snykConfig.lifecycle}" : ""
     String businessCriticality = snykConfig.businessCriticality ? "${snykConfig.businessCriticality}" : ""
-    String appFindings = snyk.appFindings ? "${snykConfig.appFindings}" : "false"
+    String appFindings = snykConfig.appFindings ? "${snykConfig.appFindings}" : "SUCCESS"
 
      
         stage('executeScaAnalysis') {
