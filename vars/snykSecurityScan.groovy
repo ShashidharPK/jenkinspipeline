@@ -32,11 +32,10 @@ def call(Map snykConfig) {
     String businessCriticality = snykConfig.businessCriticality ? "${snykConfig.businessCriticality}" : ""
     String appFindings = snykConfig.appFindings ? "${snykConfig.appFindings}" : "SUCCESS"
     
-    if test -z "$repoUrl" || test -z "$orgId" || test -z "$projectName"
-	then
-		echo "Variables repoUrl or orgId or projectName is not defined"
-		exit 1
-	fi
+    if (!repoUrl || !orgId || !projectName || !dockerImage) {
+  	println "Variables repoUrl or orgId or projectName is not defined"
+  	System.exit(1)
+	}
      
         stage('executeScaAnalysis') {
 		 
