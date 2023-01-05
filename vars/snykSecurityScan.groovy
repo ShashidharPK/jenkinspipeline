@@ -38,7 +38,12 @@ def call(Map snykConfig) {
 		    if ( performAppAnalysis == "true" ) {
                 catchError(buildResult: "${appFindings}")  {
                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                   	sh """			
+                   	sh """
+			if [[ -z ${repoUrl} || -z ${orgId} || -z ${projectName} ]]
+			then
+				echo "Variables repoUrl or orgId or projectName is not defined"
+				exit 1
+			fi
                        	snyk auth ${TOKEN}
                        	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --severity-threshold=${severity} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                        	"""
@@ -62,7 +67,7 @@ def call(Map snykConfig) {
 
         stage('executeIacAnalysis') {
 	      
-			if ( iacAnalysis == true ) {
+			if ( iacAnalysis == "true" ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """        
@@ -75,7 +80,7 @@ def call(Map snykConfig) {
 			}
         stage('executeContainerAnalysis'){
 		    // Checks for application vulnerability from the container images
-		    if ( containerAnalysis == true && performAppAnalysis == true ) {
+		    if ( containerAnalysis == "true" && performAppAnalysis == "true" ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                             sh """                                
@@ -85,7 +90,7 @@ def call(Map snykConfig) {
                         }
                     }
                 }
-            if ( containerAnalysis == true && performAppAnalysis == false ) {
+            if ( containerAnalysis == "true" && performAppAnalysis == "false" ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                             sh """
