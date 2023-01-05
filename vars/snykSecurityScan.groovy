@@ -1,19 +1,19 @@
 /* To connect with the snyk dashboard SNYK_TOKEN should be set up in the Jenkins environment as a secret variable
 *  For executing the snyk.groovy there are some mandatory variables that needs to be passed from jenkinsfile
 *  Required Variables where the build fails when the values is not passed
-*  repoUrl: URL of the repository that needs to be scanned
-*  severity: Severity of the vulnerabilities where the scans fail
-*  orgId: Snyk Organization id
-*  projectName: Name of the project as it is displayed in Snyk
-*  dockerImage: Image which needs to be scanned
-*  imageTag: Tag of the docker image
-*  performAppAnalysis: Set to true, SCA and SAST analysis are performed
-*  iacAnalysis: Set to true, IAC scans are performed
-*  containerAnalysis: Set to true, Container scans are performed
-*  Optional Variables where the default values are mentioned in the snyk.groovy
-*  environment: Environment tag displayed in snyk
-*  lifecycle: Lifecycle tag displayed in snyk
-*  businessCriticality: Business criticality tag displayed in snyk
+*  repoUrl: URL of the repository that needs to be scanned. This is a mandatory field
+*  severity: Severity of the vulnerabilities where the scans fail. Default: high
+*  orgId: Snyk Organization id. This is a mandatory field
+*  projectName: Name of the project as it is displayed in Snyk. This is a mandatory field
+*  dockerImage: Image which needs to be scanned. This is a mandatory field
+*  imageTag: Tag of the docker image. Default: latest
+*  performAppAnalysis: Set to true, SCA and SAST analysis are performed. Default: false
+*  iacAnalysis: Set to true, IAC scans are performed. Default: false
+*  containerAnalysis: Set to true, Container scans are performed. Default: false
+*  environment: Environment tag displayed in snyk. Default: null
+*  lifecycle: Lifecycle tag displayed in snyk. Default: null
+*  businessCriticality: Business criticality tag displayed in snyk. Default: null
+*  appFindings: Decides whether to pass or fail the builds when vulnerabilities are found. Default: SUCCESS
 */
 def call(Map snykConfig) {
 
@@ -89,7 +89,7 @@ def call(Map snykConfig) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                             sh """
-				if test -z "$repoUrl" || test -z "$orgId" || test -z "$projectName" || test -z "$dockerImage" || test -z "$imageTag"
+				if test -z "$repoUrl" || test -z "$orgId" || test -z "$projectName" || test -z "$dockerImage"
 				then
 					echo "Variables repoUrl or orgId or projectName is not defined"
 					exit 1
