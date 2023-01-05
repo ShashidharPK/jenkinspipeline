@@ -18,7 +18,7 @@
 def call(Map snykConfig) {
 
     String repoUrl = snykConfig.repoUrl ? "${snykConfig.repoUrl}" : ""
-    String severity = snykConfig.severity ? "${snykConfig.severity}" : ""
+    String severity = snykConfig.severity ? "${snykConfig.severity}" : "high"
     String orgId = snykConfig.orgId ? "${snykConfig.orgId}" : ""
     String projectName = snykConfig.projectName ? "${snykConfig.projectName}" : ""
     String dockerImage = snykConfig.dockerImage ? "${snykConfig.dockerImage}" : ""
@@ -38,9 +38,14 @@ def call(Map snykConfig) {
 		    if (performAppAnalysis == true ) {
                 catchError(buildResult: "${appFindings}")  {
                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                   	sh """                    
+                   	sh """
+			if [[ -z $repoUrl || -z $orgId || -z $projectName ]];
+			then
+				echo "Variables repoUrl or orgId or projectName is not defined"
+				exit 1
+			fi
                        	snyk auth ${TOKEN}
-                       	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}                    
+                       	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --severity-threshold=${severity} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                        	"""
                        	}
                    	}
@@ -67,7 +72,7 @@ def call(Map snykConfig) {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                     sh """        
                         snyk auth ${TOKEN}
-                        snyk iac test --report --org=${orgId} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
+                        snyk iac test --report --org=${orgId} --remote-repo-url=${repoUrl} --severity-threshold=${severity} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                         """
                         }
                     }
@@ -80,7 +85,7 @@ def call(Map snykConfig) {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                             sh """                                
                                 snyk auth ${TOKEN}                               
-                                snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality} --app-vulns
+                                snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --severity-threshold=${severity} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality} --app-vulns
                             	"""
                         }
                     }
@@ -90,7 +95,7 @@ def call(Map snykConfig) {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
                             sh """
                                 snyk auth ${TOKEN}                               
-                                snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
+                                snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --severity-threshold=${severity} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                             	"""
                         }
                     }
