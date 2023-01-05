@@ -38,12 +38,7 @@ def call(Map snykConfig) {
 		    if (performAppAnalysis == true ) {
                 catchError(buildResult: "${appFindings}")  {
                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                   	sh """
-			if [[ -z ${repoUrl} || -z ${orgId} || -z ${projectName} ]]
-			then
-				echo "Variables repoUrl or orgId or projectName is not defined"
-				exit 1
-			fi
+                   	sh """			
                        	snyk auth ${TOKEN}
                        	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --severity-threshold=${severity} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                        	"""
