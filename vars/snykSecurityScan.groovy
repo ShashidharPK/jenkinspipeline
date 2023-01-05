@@ -70,7 +70,12 @@ def call(Map snykConfig) {
 			if ( iacAnalysis == "true" ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    sh """        
+                    sh """
+			if test -z "$repoUrl" || test -z "$orgId"
+			then
+				echo "Variables repoUrl or orgId or projectName is not defined"
+				exit 1
+			fi   
                         snyk auth ${TOKEN}
                         snyk iac test --report --org=${orgId} --remote-repo-url=${repoUrl} --severity-threshold=${severity} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                         """
@@ -83,7 +88,12 @@ def call(Map snykConfig) {
 		    if ( containerAnalysis == "true" && performAppAnalysis == "true" ) {
                 catchError(buildResult: "${appFindings}")  {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                            sh """                                
+                            sh """
+				if test -z "$repoUrl" || test -z "$orgId" || test -z "$projectName" || test -z "$dockerImage" || test -z "$imageTag"
+				then
+					echo "Variables repoUrl or orgId or projectName is not defined"
+					exit 1
+				fi                
                                 snyk auth ${TOKEN}                               
                                 snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --severity-threshold=${severity} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality} --app-vulns
                             	"""
