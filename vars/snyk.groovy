@@ -32,7 +32,7 @@ def call(Map snykConfig) {
     String businessCriticality = snykConfig.businessCriticality ? "${snykConfig.businessCriticality}" : ""
     String failOnSecurityFindings = snykConfig.failOnSecurityFindings ? "${snykConfig.failOnSecurityFindings}" : "SUCCESS"
     String path = snykConfig.path ? "${snykConfig.path}" : ""
-    String snyk_iac_image = "snyk-iac"
+    String snyk_iac_image = snykConfig.snyk_iac_image ? "${snykConfig.snyk_iac_image}" : "snyk-iac"
 
     if (!repoUrl || !orgId || !projectName || !dockerImage) {
   	    println "Variables repoUrl or orgId or projectName is not defined"  	    
