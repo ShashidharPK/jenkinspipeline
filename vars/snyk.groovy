@@ -1,87 +1,117 @@
-def call(String repoUrl, String severity, String org, String proj, String failonissue, String repository, String tag, String scaAnalysis, String iacAnalysis, String sastAnalysis, String containerAnalysis, Map optional) {
-	String environment = optional.environment ? "${optional.environment}" : ""
-	String lifecycle = optional.lifecycle ? "${optional.lifecycle}" : ""
-	String criticality = optional.criticality ? "${optional.criticality}" : ""	
-	
-	pipeline {
-    agent any
+/* To connect with the snyk dashboard SNYK_TOKEN should be set up in the Jenkins environment as a secret variable
+*  For executing the snyk.groovy there are some mandatory variables that needs to be passed from jenkinsfile
+*  Required Variables where the build fails when the values is not passed
+*  repoUrl: URL of the repository that needs to be scanned. This is a mandatory field
+*  severity: Severity of the vulnerabilities where the scans fail. Default: high
+*  orgId: Snyk Organization id. This is a mandatory field
+*  projectName: Name of the project as it is displayed in Snyk. This is a mandatory field
+*  dockerImage: Image which needs to be scanned. This is a mandatory field
+*  imageTag: Tag of the docker image. Default: latest
+*  performAppAnalysis: Set to true, SCA and SAST analysis are performed. Default: false
+*  iacAnalysis: Set to true, IAC scans are performed. Default: false
+*  containerAnalysis: Set to true, Container scans are performed. Default: false
+*  environment: Environment tag displayed in snyk. Default: null
+*  lifecycle: Lifecycle tag displayed in snyk. Default: null
+*  businessCriticality: Business criticality tag displayed in snyk. Default: null
+*  appFindings: Decides whether to pass or fail the builds when vulnerabilities are found. Default: SUCCESS
+*/
+def call(Map snykConfig) {
 
-    stages {
-        stage('Checkout Repo') {
-            steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: '49174964-c138-49e8-bb2d-5daaab4ba293', url: "${repoUrl}"]]])
-            }
-        }
-        stage('Install Dependencies') {
-            steps {                
-                sh 'npm install'
-            }
-        }
+    String repoUrl = snykConfig.repoUrl ? "${snykConfig.repoUrl}" : ""
+    String severity = snykConfig.severity ? "${snykConfig.severity}" : "high"
+    String orgId = snykConfig.orgId ? "${snykConfig.orgId}" : ""
+    String projectName = snykConfig.projectName ? "${snykConfig.projectName}" : ""
+    String dockerImage = snykConfig.dockerImage ? "${snykConfig.dockerImage}" : ""
+    String imageTag = snykConfig.imageTag ? "${snykConfig.imageTag}" : "latest"
+    String performAppAnalysis = snykConfig.performAppAnalysis ? "${snykConfig.performAppAnalysis}" : "true" //Performs SCA and SAST analysis if performAppAnalysis is set to true
+    String iacAnalysis = snykConfig.iacAnalysis ? "${snykConfig.iacAnalysis}" : "false"
+    String containerAnalysis = snykConfig.containerAnalysis ? "${snykConfig.containerAnalysis}" : "false"
+    //Environment, lifecycle and business criticality are tags provided for each project in Snyk. Null value will be taken by default if the value is not provided
+    String environment = snykConfig.environment ? "${snykConfig.environment}" : "" 
+    String lifecycle = snykConfig.lifecycle ? "${snykConfig.lifecycle}" : ""
+    String businessCriticality = snykConfig.businessCriticality ? "${snykConfig.businessCriticality}" : ""
+    String failOnSecurityFindings = snykConfig.failOnSecurityFindings ? "${snykConfig.failOnSecurityFindings}" : "SUCCESS"
+
+    if (!repoUrl || !orgId || !projectName || !dockerImage) {
+  	    println "Variables repoUrl or orgId or projectName is not defined"  	    
+	}
         stage('executeScaAnalysis') {
-		when {
-			expression { scaAnalysis == 'true'}
-		}
-		steps {
-            		catchError(buildResult: 'SUCCESS')  {
-                    	withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    	sh """
-                        	set +e                        
-                        	snyk auth ${TOKEN}
-                        	snyk test --org=${org} --project-name=${proj} --remote-repo-url=${repoUrl} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${criticality}                    
-                        	"""
-                        	}
-                    	}
+		    // Checks for application vulnerability from open source components
+		    if ( performAppAnalysis == "true" ) {
+                catchError(buildResult: "${failOnSecurityFindings}")  {
+                   	withCredentials([string(credentialsId: 'SNYK_API_TOKEN', variable: 'SNYK_API_TOKEN')])  {
+                   	sh """
+			if test -z "$repoUrl" || test -z "$orgId" || test -z "$projectName"
+			then
+				echo "Variables repoUrl or orgId or projectName is not defined"
+				exit 1
+			fi
+                       	snyk auth ${SNYK_API_TOKEN}
+                       	snyk monitor --org=${orgId} --project-name=${projectName} --remote-repo-url=${repoUrl} --severity-threshold=${severity} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
+                       	"""
+                	       	}
+             	  	}
                 }
 	}
-       stage('executeIacAnalysis') {
-	       when {
-			expression { iacAnalysis == 'true' }
-		}
-            steps {
-                catchError(buildResult: 'SUCCESS')  {
-                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    sh """
-                        set +e                        
-                        snyk auth ${TOKEN}
-                        snyk iac test --report                        
-                        """
-                        }
-                    }
-                }            
-			}
+        
         stage('executeSastAnalysis') {
-		when {
-			expression { sastAnalysis == 'true' }
-		}
-            steps {
-                catchError(buildResult: 'SUCCESS')  {
-                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
-                    sh '''
-                        set +e
-                        snyk auth ${TOKEN}
-                        snyk code test
-                        '''
+            // Checks for application vulnerability from the codebase
+		    if ( performAppAnalysis == "true" ) {
+                catchError(buildResult: "${failOnSecurityFindings}")  {
+                    withCredentials([string(credentialsId: 'SNYK_API_TOKEN', variable: 'SNYK_API_TOKEN')])  {
+                    sh """
+                        snyk auth ${SNYK_API_TOKEN}
+                        snyk code test --severity-threshold=${severity}
+                        """
+                        	}
+                	    }
+        	        }
+	           }
+
+        stage('executeIacAnalysis') {
+	        // Checks for application vulnerability from IAC files like Terraform, Cloud Formation, etc.
+			if ( iacAnalysis == "true" ) {
+                catchError(buildResult: "${failOnSecurityFindings}")  {
+                    withCredentials([string(credentialsId: 'SNYK_API_TOKEN', variable: 'SNYK_API_TOKEN')])  {
+                    sh """
+			if test -z "$repoUrl" || test -z "$orgId"
+			then
+				echo "Variables repoUrl or orgId or projectName is not defined"
+				exit 1
+			fi   
+                        snyk auth ${SNYK_API_TOKEN}
+                        snyk iac test --report --org=${orgId} --remote-repo-url=${repoUrl} --severity-threshold=${severity} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
+                        """
+                        			}
+                    			}
+                		}
+			}
+        stage('executeContainerAnalysis'){
+		    // Checks for application vulnerability from the container images
+		    if ( containerAnalysis == "true" && performAppAnalysis == "true" ) {
+                catchError(buildResult: "${failOnSecurityFindings}")  {
+                    withCredentials([string(credentialsId: 'SNYK_API_TOKEN', variable: 'SNYK_API_TOKEN')])  {
+                            sh """
+				if test -z "$repoUrl" || test -z "$orgId" || test -z "$projectName" || test -z "$dockerImage"
+				then
+					echo "Variables repoUrl or orgId or projectName is not defined"
+					exit 1
+				fi                
+                                snyk auth ${SNYK_API_TOKEN}                               
+                                snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --severity-threshold=${severity} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality} --app-vulns
+                            	"""
                         }
                     }
-                }            
-	    }
-        stage('executeContainerAnalysis'){
-		when {
-			expression { containerAnalysis == 'true' }
-		}
-            steps {
-                catchError(buildResult: 'SUCCESS')  {
-                    withCredentials([string(credentialsId: 'snyk-token', variable: 'TOKEN')])  {
+                }
+            if ( containerAnalysis == "true" && performAppAnalysis == "false" ) {
+                catchError(buildResult: "${failOnSecurityFindings}")  {
+                    withCredentials([string(credentialsId: 'SNYK_API_TOKEN', variable: 'SNYK_API_TOKEN')])  {
                             sh """
-                                set +e
-                                snyk auth ${TOKEN}
-                                snyk config set disableSuggestions=true
-                                snyk container test ${repository}:${tag}                               
+                                snyk auth ${SNYK_API_TOKEN}                               
+                                snyk container monitor ${dockerImage}:${imageTag} --org=${orgId} --severity-threshold=${severity} --project-name=${projectName} --project-environment=${environment} --project-lifecycle=${lifecycle} --project-business-criticality=${businessCriticality}
                             	"""
                         }
                     }
                 }
             }
         }
-    }
-}
